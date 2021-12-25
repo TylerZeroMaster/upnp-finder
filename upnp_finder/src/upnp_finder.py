@@ -1,19 +1,24 @@
-import socket
 import logging
+import socket
+from typing import Callable, List, Tuple
 
-from tornado.ioloop import IOLoop
 from tornado.httpclient import AsyncHTTPClient
 from tornado.httputil import HTTPHeaders
-
-from .utils import expect
+from tornado.ioloop import IOLoop
 
 from .upnp_device import UPNPDevice
+from .utils import expect
 
 
-class UPNPFinder():
+def _nop(_: UPNPDevice) -> None:
+    pass
+
+
+class UPNPFinder:
     def __init__(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.tracked = []
+        self.tracked: List[str] = []
+        self.callback = _nop
         self.mcast_addr = ("239.255.255.250", 1900)
         self.mcast_msg = "\r\n".join((
             "M-SEARCH * HTTP/1.1",
@@ -24,7 +29,10 @@ class UPNPFinder():
             "", ""
         )).encode("ascii")
 
-    def setup(self, callback):
+    def setup(
+        self,
+        callback: Callable[[UPNPDevice], None]
+    ) -> Tuple[socket.socket, Callable[[int, int], None]]:
         self.sock.settimeout(5.0)
         self.callback = callback
         return (self.sock, self.handle_response)
@@ -45,7 +53,7 @@ class UPNPFinder():
             logging.error(f"Location: {location}")
             logging.error(e)
 
-    def handle_response(self, *_):
+    def handle_response(self, fd: int, events: int):
         try:
             res, _ = self.sock.recvfrom(400)
             res = res.decode("ascii")

@@ -20,6 +20,7 @@ class TestServer(Application):
             timeout * 1000
         )
         sock, callback = upnpfinder.setup(on_device)
+        # ignore this type error: just pylance failing to account for overloads
         IOLoop.current().add_handler(sock, callback, IOLoop.READ)
         logging.info("Started!")
         upnpfinder.send_probe()
