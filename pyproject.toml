@@ -1,11 +1,12 @@
 [tool.poetry]
-name = "upnpfinder"
+name = "upnp-finder"
 version = "0.1.0"
-description = ""
+description = "Uses tornado and SSDP to discover UPNP devices on the network"
 authors = ["Tyler Nullmeier <tylerzeromaster@gmail.com>"]
 packages = [
-    { include = "upnpfinder" },
+    { include = "upnp_finder" },
 ]
+license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -20,4 +21,4 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-upnpfinder = "upnpfinder.cli:cli"
+upnp_finder = "upnp_finder.cli:cli"

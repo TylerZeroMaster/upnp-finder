@@ -7,7 +7,7 @@ from tornado.httputil import HTTPHeaders
 
 from .utils import expect
 
-from .upnpdevice import UPNPDevice
+from .upnp_device import UPNPDevice
 
 
 class UPNPFinder():
