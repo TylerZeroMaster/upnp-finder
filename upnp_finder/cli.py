@@ -3,7 +3,7 @@ import logging
 from tornado.ioloop import IOLoop, PeriodicCallback
 from tornado.web import Application
 
-from .src.upnp_finder import UPNPFinder
+from . import UPNPFinder
 
 
 def on_device(device):
