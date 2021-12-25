@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "upnpfinder"
+version = "0.1.0"
+description = ""
+authors = ["Tyler Nullmeier <tylerzeromaster@gmail.com>"]
+packages = [
+    { include = "upnpfinder" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+tornado = "^6.1"
+lxml = "^4.7.1"
+
+[tool.poetry.dev-dependencies]
+flake8 = "^4.0.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+upnpfinder = "upnpfinder.cli:cli"
