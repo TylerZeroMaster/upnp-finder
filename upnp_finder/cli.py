@@ -3,11 +3,11 @@ import logging
 from tornado.ioloop import IOLoop, PeriodicCallback
 from tornado.web import Application
 
-from . import UPNPFinder
+from . import UPNPFinder, UPNPDevice
 
 
-def on_device(device):
-    print("Name: ", device.get("device.friendlyName"))
+def on_device(device: UPNPDevice):
+    print("Name: ", device.get("device.friendlyName.test"))
     print("MAC: ", device.get("device.macAddress"))
 
 

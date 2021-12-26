@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "upnp-finder"
-version = "0.1.2"
+version = "0.1.3"
 description = "Uses tornado and SSDP to discover UPNP devices on the network"
 authors = ["Tyler Nullmeier <tylerzeromaster@gmail.com>"]
 packages = [

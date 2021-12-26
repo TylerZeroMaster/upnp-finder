@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 from lxml import etree
 
 
@@ -27,14 +27,15 @@ class UPNPDevice:
                 location[:location.rfind("/")] + presentationURL
             )
 
-    def get(self, path: str) -> Any:
+    def get(self, path: str) -> Optional[Any]:
         split_path = path.split(".")
         d = self._info
-        try:
-            for segment in split_path:
-                d = d[segment]
-        except KeyError:
-            d = None
+        for segment in split_path:
+            if not isinstance(d, dict):
+                return None
+            d = d.get(segment, None)
+            if d is None:
+                break
         return d
 
     def set(self, path: str, value: Any):
