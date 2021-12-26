@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "upnp-finder"
-version = "0.1.3"
+version = "0.2.0"
 description = "Uses tornado and SSDP to discover UPNP devices on the network"
 authors = ["Tyler Nullmeier <tylerzeromaster@gmail.com>"]
 packages = [
@@ -15,6 +15,8 @@ lxml = "^4.7.1"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^4.0.1"
+pytest = "^6.2.5"
+pytest-tornasync = "^0.6.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
