@@ -1,24 +1,21 @@
 import re
 import socket
+from asyncio.futures import Future
 from unittest.mock import MagicMock
 
-from tornado.concurrent import Future
-
-
+import httpx
+import pytest
+import upnp_finder.src.upnp_finder as upnp_finder
 from upnp_finder import UPNPFinder
 from upnp_finder.src.upnp_device import UPNPDevice
-import upnp_finder.src.upnp_finder as upnp_finder
 
 
-from tornado.httpclient import HTTPRequest, HTTPResponse
-
-
-class MockResponse(HTTPResponse):
-    def __init__(self):
-        super().__init__(HTTPRequest(""), 200)
+class MockResponse(httpx.Response):
+    def raise_for_status(self) -> None:
+        pass
 
     @property
-    def body(self):
+    def text(self):
         return re.sub(r"\r*\n\s*", "", """
 <?xml version="1.0"?>
 <root xmlns="urn:Belkin:device-1-0">
@@ -32,9 +29,10 @@ class MockResponse(HTTPResponse):
     <presentationURL>/test.html</presentationURL>
 </device>
 </root>
-""").encode("utf-8")
+""")
 
 
+@pytest.mark.asyncio
 async def test_send_probe():
     from datetime import datetime
 
@@ -60,13 +58,14 @@ async def test_send_probe():
     assert sock.sendto.call_args[0] == expected_args
 
 
+@pytest.mark.asyncio
 async def test_make_device():
     device_fut = Future()
     finder = UPNPFinder()
     finder.callback = lambda d: device_fut.set_result(d)
     fut = Future()
-    upnp_finder.AsyncHTTPClient.fetch = MagicMock(return_value=fut)
-    fut.set_result(MockResponse())
+    upnp_finder.httpx.AsyncClient.get = MagicMock(return_value=fut)
+    fut.set_result(MockResponse(200))
     await finder.make_device("TEST_URL")
     the_device: UPNPDevice = await device_fut
     assert the_device is not None
