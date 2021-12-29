@@ -1,25 +1,15 @@
 from typing import Any, Optional
 
-from lxml import etree
-
-
-def _parse_to_dict(tree: dict) -> dict:
-    d = {}
-    for i, child in enumerate(tree):
-        key = tag = child.tag.split('}')[1] if '}' in child.tag else child.tag
-        if key in d:
-            key = "{}-{}".format(tag, i)
-        if len(child):
-            d[key] = _parse_to_dict(child)
-        else:
-            d[key] = child.text
-    return d
+import xmltodict
 
 
 class UPNPDevice:
     def __init__(self, location: str, xmldoc: str):
-        root = etree.fromstring(xmldoc, None)
-        self._info = _parse_to_dict(root)
+        root = xmltodict.parse(xmldoc)
+        if root is None:
+            raise RuntimeError("Invalid xml document")
+        # self._info = _parse_to_dict(root)
+        self._info = root["root"]
         self.location = location
         presentationURL = self.get("device.presentationURL")
         if presentationURL is not None and presentationURL[0] == "/":

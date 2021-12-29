@@ -1,7 +1,8 @@
 import asyncio
 import logging
 import socket
-from typing import Awaitable, Callable, List, Mapping, Optional, TypeVar
+from typing import (AsyncGenerator, Awaitable, List, Mapping,
+                    Optional, TypeVar)
 
 import httpx
 
@@ -38,16 +39,11 @@ def _parse_headers(header_str: str) -> Mapping[str, str]:
     return headers
 
 
-def _nop(_: UPNPDevice) -> None:
-    pass
-
-
 class UPNPFinder:
     def __init__(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.settimeout(5.0)
         self._tracked: List[str] = []
-        self.callback = _nop
         self._http_client = httpx.AsyncClient()
         self.mcast_addr = ("239.255.255.250", 1900)
         self.mcast_msg = "\r\n".join((
@@ -58,6 +54,8 @@ class UPNPFinder:
             'MAN:"ssdp:discover"',
             "", ""
         )).encode("ascii")
+        self._device_buffer: asyncio.Queue[UPNPDevice] = asyncio.Queue()
+        asyncio.get_running_loop().add_reader(self.sock, self._handle_response)
 
     async def __aenter__(self):
         return self
@@ -70,12 +68,20 @@ class UPNPFinder:
         # return a copy
         return list(self._tracked)
 
-    def setup(
+    async def find_devices(
         self,
-        callback: Callable[[UPNPDevice], None]
-    ):
-        self.callback = callback
-        asyncio.get_running_loop().add_reader(self.sock, self._handle_response)
+        timeout: float
+    ) -> AsyncGenerator[UPNPDevice, None]:
+        try:
+            self.send_probe()
+            while True:
+                yield await asyncio.wait_for(
+                    self._device_buffer.get(),
+                    timeout
+                )
+                self._device_buffer.task_done()
+        except asyncio.exceptions.TimeoutError:
+            pass
 
     def send_probe(self):
         logging.info("Discovering devices...")
@@ -97,7 +103,7 @@ class UPNPFinder:
             response.raise_for_status()
             device = UPNPDevice(location, response.text)
             self._tracked.append(location)
-            self.callback(device)
+            self._device_buffer.put_nowait(device)
         except Exception as e:
             logging.error("upnpfinder->make_device")
             logging.error(f"Location: {location}")

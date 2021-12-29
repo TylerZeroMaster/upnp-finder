@@ -5,15 +5,15 @@ from . import UPNPFinder, UPNPDevice
 
 
 def on_device(device: UPNPDevice):
-    print("Name: ", device.get("device.friendlyName"))
-    print("MAC: ", device.get("device.macAddress"))
+    pass
 
 
 async def main():
     async with UPNPFinder() as finder:
-        finder.setup(on_device)
+        # finder.setup(on_device)
         logging.info("Started")
-        await finder.send_probe_with_delay(5)
+        async for device in finder.find_devices(3):
+            print(device.get("device.friendlyName"))
 
 
 def cli():
