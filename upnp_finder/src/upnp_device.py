@@ -1,6 +1,6 @@
 from typing import Any, Optional
 
-from lxml import etree
+import defusedxml.ElementTree as etree
 
 
 def _parse_to_dict(tree: dict) -> dict:
@@ -18,7 +18,7 @@ def _parse_to_dict(tree: dict) -> dict:
 
 class UPNPDevice:
     def __init__(self, location: str, xmldoc: str):
-        root = etree.fromstring(xmldoc, None)
+        root = etree.fromstring(xmldoc)
         self._info = _parse_to_dict(root)
         self.location = location
         presentationURL = self.get("device.presentationURL")
