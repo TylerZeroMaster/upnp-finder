@@ -10,10 +10,18 @@ def on_device(device: UPNPDevice):
 
 async def main():
     async with UPNPFinder() as finder:
-        # finder.setup(on_device)
         logging.info("Started")
         async for device in finder.find_devices(3):
-            print(device.get("device.friendlyName"))
+            name = device.get("device.friendlyName")
+            service_list = device.get("device.serviceList")
+            services = {}
+            if service_list is not None:
+                for _, service in service_list.items():
+                    service_name = service["serviceId"].split(':')[-1]
+                    services[service_name] = service
+            print(name)
+            print(service_list)
+            print("")
 
 
 def cli():
